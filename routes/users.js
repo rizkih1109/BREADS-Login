@@ -13,6 +13,9 @@ const db = new Pool({
 })
 
 router.get('/', (req, res) => {
+  const url = req.url == '/' ? '/?page=1' : req.url
+  console.log(url);
+
   const { page = 1, title, startdate, enddate, complete, mode } = req.query
   const queries = []
   const params = []
@@ -23,7 +26,7 @@ router.get('/', (req, res) => {
   if (title) {
     params.push(title)
     paramscount.push(title)
-    queries.push(`title like '%' || $${params.length} || '%'`)
+    queries.push(`title ILIKE '%' || $${params.length} || '%'`)
   }
 
   if (startdate && enddate) {
@@ -57,12 +60,13 @@ router.get('/', (req, res) => {
   sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`
   
   db.query(sqlcount, paramscount, (err, { rows: data }) => {
-    const total = data.total
+    const total = data[0].total
     const pages = Math.ceil(total / limit)
 
     db.query(sql, params, (err, { rows }) => {
       if (err) return res.send(err)
-      res.render('users/list', { data: rows, query: req.query, pages, offset, page, url: req.url, moment })
+      console.log(pages)
+      res.render('users/list', { data: rows, query: req.query, pages, offset, page, url, moment })
     })
   })
 })
@@ -72,14 +76,14 @@ router.get('/add', (req, res) => {
 })
 
 router.post('/add', (req, res) => {
-  db.query('INSERT INTO data (title, userid) values (?, ?)', [req.body.title, req.body.userid], (err) => {
+  db.query('INSERT INTO todos (title, userid) values ($1, $2)', [req.body.title, req.body.userid], (err) => {
     if (err) return res.send(err)
     res.redirect('/')
   })
 })
 
 router.get('/delete/:index', (req, res) => {
-  db.run('DELETE FROM data WHERE id = ?', [req.params.index], (err) => {
+  db.query('DELETE FROM todos WHERE id = $1', [req.params.index], (err) => {
     if (err) return res.send(err)
     res.redirect('/')
   })
@@ -87,14 +91,14 @@ router.get('/delete/:index', (req, res) => {
 
 router.get('/edit/:index', (req, res) => {
   const index = req.params.index
-  db.get('SELECT * FROM data where id = ?', [index], (err, rows) => {
+  db.query('SELECT * FROM todos where id = $1', [index], (err, rows) => {
     if (err) return res.send(err)
-    res.render('edit', { data: rows })
+    res.render('users/edit', { data: rows })
   })
 })
 
 router.post('/edit/:index', (req, res) => {
-  db.run('UPDATE data SET name = ?, height = ?, weight = ?, birthdate = ?, married = ? WHERE id = ?', [req.body.name, req.body.height, req.body.weight, req.body.birthdate, req.body.married, req.params.index], (err) => {
+  db.query('UPDATE todos SET title = $1, deadline = $2, complete = $3 WHERE id = $4', [req.body.title, req.body.deadline, req.body.complete, req.params.index], (err) => {
     if (err) {
       console.log(err)
       return res.send(err)
