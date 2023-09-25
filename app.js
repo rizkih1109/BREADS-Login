@@ -17,6 +17,7 @@ const pool = new Pool({
 var indexRouter = require('./routes/index')(pool);
 var usersRouter = require('./routes/users')(pool);
 
+var flash = require('connect-flash');
 var app = express();
 
 // view engine setup
@@ -34,6 +35,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }))
+app.use(flash());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

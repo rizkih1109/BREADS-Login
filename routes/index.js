@@ -6,7 +6,7 @@ const saltRounds = 10;
 module.exports = function (db) {
 
   router.get('/', function (req, res, next) {
-    res.render('login');
+    res.render('login', { failedInfo: req.flash('failedInfo'), successInfo: req.flash('successInfo') });
   });
 
   router.post('/', async function (req, res, next) {
@@ -15,11 +15,17 @@ module.exports = function (db) {
 
       const { rows: users } = await db.query(`SELECT * FROM users WHERE email = $1`, [email])
 
-      if (users.length == 0) return res.send(`email doesn't exits`)
+      if (users.length == 0) {
+        req.flash('failedInfo', `Email Doesn't Exist`)
+        return res.redirect('/')
+      }
 
-      if (!bcrypt.compareSync(password, users[0].password)) return res.send('password is wrong')
+      if (!bcrypt.compareSync(password, users[0].password)) {
+        req.flash('failedInfo', `password is wrong`)
+        return res.redirect('/')
+      }
 
-      req.session.user = { email: users[0].email }
+      req.session.user = { userid: users[0].id, email: users[0].email }
       res.redirect('/users')
     } catch (e) {
       console.log(e)
@@ -33,21 +39,34 @@ module.exports = function (db) {
   });
 
   router.post('/register', async function (req, res, next) {
-    const { email, password, repassword } = req.body
+    try {
+      const { email, password, repassword } = req.body
 
-    if (password !== repassword) return res.send(`password doesn't match`)
+      if (password !== repassword) return res.send(`password doesn't match`)
 
-    const { rows: emails } = await db.query('SELECT * FROM users WHERE email = $1', [email])
-    console.log(emails)
-    if (emails.length > 0) return res.send(`email already exits`)
+      const { rows: emails } = await db.query('SELECT * FROM users WHERE email = $1', [email])
 
-    const hash = bcrypt.hashSync(password, saltRounds);
-    console.log(hash)
+      if (emails.length > 0) return res.send(`email already exits`)
 
-    await db.query(`INSERT INTO users (email, password) VALUES ($1, $2)`, [email, hash])
-    res.redirect('/')
+      const hash = bcrypt.hashSync(password, saltRounds);
+
+      await db.query(`INSERT INTO users (email, password) VALUES ($1, $2)`, [email, hash])
+
+      req.flash('successInfo', 'successfully registered, please sign in!')
+
+      res.redirect('/')
+    } catch (e) {
+      console.log(e)
+      res.redirect('/')
+    }
 
   });
+
+  router.get('/logout', function (req, res) {
+    req.session.destroy(function (err) {
+      res.redirect('/')
+    })
+  })
 
   return router;
 }

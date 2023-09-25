@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const moment = require('moment');
-var {isLoggedIn} = require('../helper/util.js');
+var { isLoggedIn } = require('../helper/util.js');
 
 module.exports = function (db) {
 
-  router.get('/', isLoggedIn, (req, res) => {
+  router.get('/', isLoggedIn, async (req, res) => {
     const url = req.url == '/' ? '/?page=1' : req.url
     console.log(url);
 
@@ -15,6 +15,8 @@ module.exports = function (db) {
     const paramscount = []
     const limit = 5
     const offset = (page - 1) * 5
+    const { rows: akun } = await db.query(`SELECT * FROM users WHERE id = $1`, [req.session.user.userid])
+
 
     if (title) {
       params.push(title)
@@ -42,25 +44,30 @@ module.exports = function (db) {
       queries.push(`complete = $${params.length}`)
     }
 
-    let sql = `SELECT * FROM todos`
-    let sqlcount = `SELECT COUNT (*) AS total FROM todos`
+    params.push(req.session.user.userid)
+    paramscount.push(req.session.user.userid)
+    let sql = `SELECT * FROM todos WHERE userid = $${params.length}`
+    let sqlcount = `SELECT COUNT (*) AS total FROM todos WHERE userid = $${params.length}`
     if (queries.length > 0) {
-      sql += ` WHERE ${queries.join(` ${mode} `)}`
-      sqlcount += ` WHERE ${queries.join(` ${mode} `)}`
+      sql += ` AND ${queries.join(` ${mode} `)}`
+      sqlcount += ` AND ${queries.join(` ${mode} `)}`
     }
+
+    console.log(sql, params , sqlcount)
 
     params.push(limit, offset)
     sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`
 
     db.query(sqlcount, paramscount, (err, { rows: data }) => {
-      const total = data[0].total
-      const pages = Math.ceil(total / limit)
-
-      db.query(sql, params, (err, { rows }) => {
-        if (err) return res.send(err)
-        console.log(pages)
-        res.render('users/list', { data: rows, query: req.query, pages, offset, page, url, moment })
-      })
+      if (err) res.send(err)
+      else {
+        const total = data[0].total
+        const pages = Math.ceil(total / limit)
+        db.query(sql, params, (err, { rows }) => {
+          if (err) return res.send(err)
+          res.render('users/list', { data: rows, query: req.query, pages, offset, page, url, moment, akun: akun[0], user: req.session.user })
+        })
+      }
     })
   })
 
