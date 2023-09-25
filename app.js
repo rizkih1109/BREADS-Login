@@ -3,9 +3,19 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
+const { Pool } = require('pg');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const pool = new Pool({
+  user: 'rizkih',
+  host: 'localhost',
+  database: 'datadb',
+  password: '12345',
+  port: 5432,
+})
+
+var indexRouter = require('./routes/index')(pool);
+var usersRouter = require('./routes/users')(pool);
 
 var app = express();
 
@@ -18,6 +28,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({
+  secret: 'mancity',
+  resave: false,
+  saveUninitialized: true
+}))
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

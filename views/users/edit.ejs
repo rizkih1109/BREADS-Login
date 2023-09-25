@@ -3,41 +3,6 @@
         <div class="head">
             <h1>Updatting Data</h1>
         </div>
-        <form action="" method="post">
-            <div>
-                <label for="name">Name</label>
-                <input type="text" name="name" placeholder="Insert your name" value="<%= data.name %>" required /><br>
-            </div>
-            <div>
-                <label for="height">Height</label>
-                <input type="number" name="height" placeholder="insert your height" value="<%= data.height %>" /><br>
-            </div>
-            <div>
-                <label for="weight">Weight</label>
-                <input type="number" step="0.01" name="weight" placeholder="insert your weight"
-                    value="<%= data.weight %>" /><br>
-            </div>
-            <div class="date2">
-                <label for="birthdate">Birth Date</label>
-                <input type="date" name="birthdate" value="<%= data.birthdate %>" />
-            </div>
-            <div>
-                <legend>Is Married</legend>
-                <% if(!data.married) { %>
-                    <input type="radio" id="false" name="married" value="0" checked>
-                    <label for="false">Not Yet</label><br>
-                    <input type="radio" id="true" name="married" value="1">
-                    <label for="true">Yes</label>
-                <% } else { %>
-                    <input type="radio" id="false" name="married" value="0">
-                    <label for="false">Not Yet</label><br>
-                    <input type="radio" id="true" name="married" value="1" checked>
-                    <label for="true">Yes</label>
-                <% } %>
-            </div>
-            <div class="foot2">
-                <button type="submit" class="b5">Save</button><a href="/" class="btn">Back</a>
-            </div>
-        </form>
+        
     </div>
 <%- include('../partials/footer') %>
