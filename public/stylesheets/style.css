@@ -7,3 +7,37 @@
   display: flex;
   justify-content: space-between;
 }
+
+.head {
+  margin-top: 10px;
+  background-color: #f2f2f2;
+  padding: 10px 15px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  text-align: center;
+  border: 1px solid #dee2e6;
+}
+
+.foot2 {
+  background-color: #f2f2f2;
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+
+form {
+  border-top: 1px solid #dee2e6;
+  border-left: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+}
+
+table {
+  border-bottom: 1px solid #f1f1f1;
+  border-left: 1px solid #f1f1f1;
+  border-right: 1px solid #f1f1f1;
+}
+
+h1 {
+  margin-bottom: 0px;
+}

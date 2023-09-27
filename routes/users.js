@@ -7,7 +7,6 @@ module.exports = function (db) {
 
   router.get('/', isLoggedIn, async (req, res) => {
     const url = req.url == '/' ? '/?page=1' : req.url
-    console.log(url);
 
     const { page = 1, title, startdate, enddate, complete, mode } = req.query
     const queries = []
@@ -53,7 +52,7 @@ module.exports = function (db) {
       sqlcount += ` AND ${queries.join(` ${mode} `)}`
     }
 
-    console.log(sql, params , sqlcount)
+    sql += ' ORDER BY id DESC'
 
     params.push(limit, offset)
     sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`
@@ -76,9 +75,9 @@ module.exports = function (db) {
   })
 
   router.post('/add', (req, res) => {
-    db.query('INSERT INTO todos (title, userid) values ($1, $2)', [req.body.title, req.body.userid], (err) => {
+    db.query('INSERT INTO todos (title, userid) values ($1, $2)', [req.body.title, req.session.user.userid], (err) => {
       if (err) return res.send(err)
-      res.redirect('/')
+      res.redirect('/users')
     })
   })
 
@@ -91,19 +90,18 @@ module.exports = function (db) {
 
   router.get('/edit/:index', (req, res) => {
     const index = req.params.index
-    db.query('SELECT * FROM todos where id = $1', [index], (err, rows) => {
+    db.query('SELECT * FROM todos where id = $1', [index], (err, { rows: data }) => {
       if (err) return res.send(err)
-      res.render('users/edit', { data: rows })
+      res.render('users/edit', { data, moment })
     })
   })
 
   router.post('/edit/:index', (req, res) => {
-    db.query('UPDATE todos SET title = $1, deadline = $2, complete = $3 WHERE id = $4', [req.body.title, req.body.deadline, req.body.complete, req.params.index], (err) => {
-      if (err) {
-        console.log(err)
-        return res.send(err)
-      }
-      res.redirect('/')
+    const index = req.params.index
+    console.log(req.body)
+    db.query('UPDATE todos SET title = $1, deadline = $2, complete = $3 WHERE id = $4', [req.body.title, req.body.deadline, req.body.complete? req.body.complete : false , index], (err) => {
+      if (err) res.send(err)
+      else res.redirect('/users')
     })
   })
 
