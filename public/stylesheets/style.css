@@ -3,9 +3,35 @@
   padding-bottom: 7px;
 }
 
+body {
+  margin-left: 14%;
+  margin-right: 14%;
+}
+
 .foot {
   display: flex;
   justify-content: space-between;
+}
+
+h3 {
+  margin: 0px;
+  padding-top: 5px;
+}
+
+.ava {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.pp {
+margin: 0px;
+}
+
+img.pp {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
 }
 
 .head {
@@ -40,4 +66,9 @@ table {
 
 h1 {
   margin-bottom: 0px;
+}
+
+.preview {
+  width: 300px;
+  height: 300px;
 }

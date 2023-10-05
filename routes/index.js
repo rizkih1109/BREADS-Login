@@ -35,18 +35,24 @@ module.exports = function (db) {
   });
 
   router.get('/register', function (req, res, next) {
-    res.render('register');
+    res.render('register', { failedInfo: req.flash('failedInfo'), successInfo: req.flash('successInfo') });
   });
 
   router.post('/register', async function (req, res, next) {
     try {
       const { email, password, repassword } = req.body
 
-      if (password !== repassword) return res.send(`password doesn't match`)
+      if (password !== repassword) {
+        req.flash('failedInfo', `Password doesn't match`)
+        return res.redirect('/register')
+      }
 
       const { rows: emails } = await db.query('SELECT * FROM users WHERE email = $1', [email])
 
-      if (emails.length > 0) return res.send(`email already exits`)
+      if (emails.length > 0) {
+        req.flash('failedInfo', `Email already Exist`)
+        return res.redirect('/register')
+      }
 
       const hash = bcrypt.hashSync(password, saltRounds);
 
@@ -57,7 +63,7 @@ module.exports = function (db) {
       res.redirect('/')
     } catch (e) {
       console.log(e)
-      res.redirect('/')
+      res.redirect('/register')
     }
 
   });
