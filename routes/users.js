@@ -43,8 +43,6 @@ module.exports = function (db) {
       sql += ` AND (${queries.join(` ${mode} `)})`
     }
 
-    console.log(sql, params)
-
     db.query(sql, params, (err, { rows: data }) => {
       if (err) res.send(err)
       else {
@@ -58,14 +56,11 @@ module.exports = function (db) {
           sql += ` AND (${queries.join(` ${mode} `)})`
         }
 
-        console.log(sql)
-
         sql += ` ORDER BY ${sortby} ${sort}`
 
         params.push(limit, offset)
         sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`
 
-        console.log(sql, params)
         db.query(sql, params, (err, { rows }) => {
           if (err) return res.send(err)
           res.render('users/list', { data: rows, query: req.query, pages, offset, page, url, moment, akun: akun[0], user: req.session.user, sort, sortby })
@@ -133,7 +128,6 @@ module.exports = function (db) {
       res.redirect('/users');
     });
   });
-
 
   return router;
 

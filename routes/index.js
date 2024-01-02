@@ -12,7 +12,6 @@ module.exports = function (db) {
   router.post('/', async function (req, res, next) {
     try {
       const { email, password } = req.body
-
       const { rows: users } = await db.query(`SELECT * FROM users WHERE email = $1`, [email])
 
       if (users.length == 0) {
